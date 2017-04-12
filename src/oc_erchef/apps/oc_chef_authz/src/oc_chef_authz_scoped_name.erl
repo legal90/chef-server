@@ -121,7 +121,7 @@ names_to_authz_id(Type, Names, MapperContext) ->
 
     %% Map org names to org ids
     {NamesWithOrgIds, Errors2, _} =
-        lists:foldl(fun(Name, Acc) -> lookup_org_id(Name, Acc, MapperContext) end,
+        lists:foldl(fun(Name, Acc) -> lookup_org_id(Name, Acc) end,
                     {[], Errors, OrgCache}, ProperNames),
 
     %% group by org id for efficiency (can't do it sooner because we don't know all the org ids
@@ -144,10 +144,10 @@ filter_errors(Error, {Parsed, Errors}) ->
 %%
 %% already have id for orgname, skip
 %% Errors: orgname_not_found
-lookup_org_id(#sname{org_id = OrgId} = Name, {AccNames, Errors, Cache}, _Context) when OrgId =/= undefined ->
+lookup_org_id(#sname{org_id = OrgId} = Name, {AccNames, Errors, Cache}) when OrgId =/= undefined ->
     { [Name | AccNames], Errors, Cache };
 %% Need to lookup name
-lookup_org_id(#sname{org = OrgName} = Name, {AccNames, Errors, Cache}, _Context) ->
+lookup_org_id(#sname{org = OrgName} = Name, {AccNames, Errors, Cache}) ->
     case lookup_org_id_cached(OrgName, Cache) of
         {not_found, Cache1} ->
             {AccNames, [{orgname_not_found, Name} | Errors], Cache1};
@@ -274,7 +274,7 @@ find_group_authz_ids(GroupNames, Context) ->
 %%
 %%
 convert_ids_to_names(ActorAuthzIds, GroupAuthzIds, Context) ->
-    {ClientNames, RemainingAuthzIds} = authz_id_to_names(client, ActorAuthzIds,Context),
+    {ClientNames, RemainingAuthzIds} = authz_id_to_names(client, ActorAuthzIds, Context),
     {UserNames, DefunctActorAuthzIds} = authz_id_to_names(user, RemainingAuthzIds, Context),
     {GroupNames, DefunctGroupAuthzIds} = authz_id_to_names(group, GroupAuthzIds, Context),
     oc_chef_authz_cleanup:add_authz_ids(DefunctActorAuthzIds, DefunctGroupAuthzIds),
@@ -471,7 +471,7 @@ org_id_to_name(OrgId) ->
     end.
 
 %%
-%% Memoize org id lookup
+%% Memorize org id lookup
 %%
 -spec init_org_name_cache() -> map().
 init_org_name_cache() ->
