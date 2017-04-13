@@ -49,8 +49,6 @@ end
   end
 end
 
-
-
 # Generate self-signed SSL certificate unless the user has provided one
 if (node['private_chef']['nginx']['ssl_certificate'].nil? &&
     node['private_chef']['nginx']['ssl_certificate_key'].nil?)
@@ -72,6 +70,13 @@ if (node['private_chef']['nginx']['ssl_certificate'].nil? &&
 
   node.default['private_chef']['nginx']['ssl_certificate'] = ssl_crtfile
   node.default['private_chef']['nginx']['ssl_certificate_key'] = ssl_keyfile
+end
+
+# Link the required recipe file into the HTML static files root.
+if node['private_chef']['required_recipe']['enable']
+  link ::File.join(nginx_html_dir, 'required_recipe') do
+    to node['private_chef']['required_recipe']['path']
+  end
 end
 
 # Generate dhparam.pem unless the user has provided a dhparam file
